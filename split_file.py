@@ -121,7 +121,7 @@ class Spinner:
     def spinner_task(self):
         while self.busy:
             s = next(self.spinner_generator)
-            sys.stdout.write(f"{GREEN}\r{self.msg}{s}{RESET} ")
+            sys.stdout.write(f"{GREEN}\r{self.msg} {s} {RESET}")
             sys.stdout.flush()
             time.sleep(self.delay)
         sys.stdout.write(f"\r{' ' * (len(self.msg) + 5)}\r")
@@ -190,7 +190,7 @@ def split_file_nlines(source_name, nlines, target_dir=None,
                 print(BLUE + target_name + RESET)
 
             with (open(target_name, mode="w+", encoding=encoding) as target,
-                  Spinner("read & write: ", 0.1)):
+                  Spinner("read & write:", 0.1)):
                 target.write(title_line)
 
                 for _ in range(nlines):
@@ -234,7 +234,7 @@ def split_file_nfiles(source_name, nfiles, target_dir=None,
                 nlines += 1
 
             with (open(target_name, mode="w", encoding=encoding) as target,
-                  Spinner("read & write: ", 0.1)):
+                  Spinner("read & write:", 0.1)):
                 target.write(title_line)
 
                 for _ in range(nlines):
