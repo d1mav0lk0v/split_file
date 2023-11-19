@@ -94,7 +94,6 @@ start...
 temp\input_1.csv
 temp\input_2.csv
 temp\input_3.csv
-temp\input_4.csv
 success!
 
 $ cat temp/input_1.csv
