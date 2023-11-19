@@ -4,6 +4,8 @@
 
 Split one file into several files given command line arguments.
 
+**Reading and writing occurs line by line.**
+
 Arguments:
 * ```-h``` show this help message and exit;
 * one option to select, title line does not count:

@@ -4,6 +4,8 @@
 import os
 import sys
 import argparse
+import time
+import threading
 
 from itertools import count
 
@@ -98,6 +100,48 @@ def parse_command_args():
     return parser.parse_args()
 
 
+class Spinner:
+    busy = False
+    delay = 0.1
+
+
+    @staticmethod
+    def spinning_cursor():
+        while True:
+            for cursor in "|/-\\":
+                yield cursor
+
+
+    def __init__(self, msg = "", delay = 0):
+        self.spinner_generator = self.spinning_cursor()
+        self.msg = msg
+        self.delay = delay
+
+
+    def spinner_task(self):
+        while self.busy:
+            s = next(self.spinner_generator)
+            sys.stdout.write(f"{GREEN}\r{self.msg} {s} {RESET}")
+            sys.stdout.flush()
+            time.sleep(self.delay)
+        sys.stdout.write(f"\r{' ' * (len(self.msg) + 5)}\r")
+        sys.stdout.flush()
+
+
+    def __enter__(self):
+        self.busy = True
+        self.thread = threading.Thread(target=self.spinner_task)
+        self.thread.start()
+
+
+    def __exit__(self, exception, value, tb):
+        self.busy = False
+        time.sleep(self.delay)
+        self.thread.join()
+        if exception is not None:
+            return False
+
+
 def get_target_file_format(source_name, target_dir=None):
     """Return the format string in the file suffix.
     The string is the path to the file."""
@@ -145,7 +189,8 @@ def split_file_nlines(source_name, nlines, target_dir=None,
             if verbose:
                 print(BLUE + target_name + RESET)
 
-            with open(target_name, mode="w+", encoding=encoding) as target:
+            with (open(target_name, mode="w+", encoding=encoding) as target,
+                  Spinner("read & write:", 0.1)):
                 target.write(title_line)
 
                 for _ in range(nlines):
@@ -188,7 +233,8 @@ def split_file_nfiles(source_name, nfiles, target_dir=None,
             if i <= rest_source_nlines:
                 nlines += 1
 
-            with open(target_name, mode="w", encoding=encoding) as target:
+            with (open(target_name, mode="w", encoding=encoding) as target,
+                  Spinner("read & write:", 0.1)):
                 target.write(title_line)
 
                 for _ in range(nlines):
@@ -203,8 +249,7 @@ def main():
 
     args = parse_command_args()
 
-    if args.verbose:
-        print(GREEN + "start..."  + RESET)
+    print(GREEN + "start..."  + RESET)
 
     try:
         if args.nlines is not None:
@@ -228,8 +273,7 @@ def main():
     except Exception as exc:
         error(exc)
     else:
-        if args.verbose:
-            print(GREEN + "success!"  + RESET)
+        print(GREEN + "success!"  + RESET)
 
 
 if __name__ == "__main__":
