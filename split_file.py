@@ -45,6 +45,7 @@ def parse_command_args():
     description = """description:
     {0}Split one file into several files given command line arguments.
     {0}New files are created with a sequence number suffix.
+    {0}New files are not created if there are no lines to create them.
     {1}Warning: new files may erase old files!{2}""".format(GREEN, YELLOW, RESET)
 
     parser = argparse.ArgumentParser(
@@ -172,15 +173,24 @@ def split_file_nlines(source_name, nlines, target_dir=None,
     The number of lines in the new files is the same, maybe except for the
     last one. If the total number of lines is not a multiple of the given
     number, then the last file will have fewer lines.
+
+    The file is created if there is at least one line. Empty files are
+    not created.
     """
 
     target_name_format = get_target_file_format(source_name, target_dir)
 
     with open(source_name, mode="r", encoding=encoding) as source:
+        source.seek(0, 2)
+        source_size = source.tell()
+        source.seek(0, 0)
+
         title_line = source.readline() if title else ""
 
-        break_loop = False
         for i in count(1):
+            if source_size == source.tell():
+                break
+
             target_name = target_name_format.format(i)
             if verbose:
                 print(BLUE + target_name + RESET)
@@ -193,13 +203,9 @@ def split_file_nlines(source_name, nlines, target_dir=None,
                     line = source.readline()
                     target.write(line)
                     if not line:
-                        break_loop = True
                         break
 
             del_newline_endfile(target_name)
-
-            if break_loop:
-                break
 
 
 def split_file_nfiles(source_name, nfiles, target_dir=None,
@@ -207,12 +213,20 @@ def split_file_nfiles(source_name, nfiles, target_dir=None,
     """Split source file by number of files.
 
     The resulting files contain approximately the same number of lines.
+
     The biggest difference is one line.
+
+    The file is created if there is at least one line. Empty files are
+    not created.
     """
 
     target_name_format = get_target_file_format(source_name, target_dir)
 
     with open(source_name, mode="r", encoding=encoding) as source:
+        source.seek(0, 2)
+        source_size = source.tell()
+        source.seek(0, 0)
+
         # O(n)
         with Spinner("count lines:", 0.1):
             source_nlines = (-1 if title else 0) + sum(1 for _ in source)
@@ -223,6 +237,9 @@ def split_file_nfiles(source_name, nfiles, target_dir=None,
         title_line = source.readline() if title else ""
 
         for i in range(1, nfiles + 1):
+            if source_size == source.tell():
+                break
+
             target_name = target_name_format.format(i)
             if verbose:
                 print(BLUE + target_name + RESET)

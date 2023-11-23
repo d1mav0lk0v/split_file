@@ -39,6 +39,7 @@ usage: split_file.py [-h] (-l NLINES | -f NFILES) [-e ENCODING] [-t] [-v] source
 description:
     Split one file into several files given command line arguments.
     New files are created with a sequence number suffix.
+    New files are not created if there are no lines to create them.
     Warning: new files may erase old files!
 
 positional arguments:
