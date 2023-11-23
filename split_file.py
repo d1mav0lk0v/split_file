@@ -101,10 +101,6 @@ def parse_command_args():
 
 
 class Spinner:
-    busy = False
-    delay = 0.1
-
-
     @staticmethod
     def spinning_cursor():
         while True:
@@ -217,8 +213,10 @@ def split_file_nfiles(source_name, nfiles, target_dir=None,
     target_name_format = get_target_file_format(source_name, target_dir)
 
     with open(source_name, mode="r", encoding=encoding) as source:
-        source_nlines = (-1 if title else 0) + sum(1 for _ in source) # O(n)
-        source.seek(0, 0)
+        # O(n)
+        with Spinner("count lines:", 0.1):
+            source_nlines = (-1 if title else 0) + sum(1 for _ in source)
+            source.seek(0, 0)
 
         quot_source_nlines, rest_source_nlines = divmod(source_nlines, nfiles)
 
